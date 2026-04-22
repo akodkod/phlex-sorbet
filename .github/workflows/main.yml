@@ -1,0 +1,34 @@
+name: Ruby
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Ruby ${{ matrix.ruby }} / Sidekiq ${{ matrix.sidekiq }}
+    strategy:
+      matrix:
+        ruby:
+          - '3.4.7'
+        sidekiq:
+          - '7'
+          - '8'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Install Appraisal dependencies
+        run: bundle exec appraisal sidekiq-${{ matrix.sidekiq }} bundle install
+      - name: Run the default task
+        run: bundle exec appraisal sidekiq-${{ matrix.sidekiq }} rake

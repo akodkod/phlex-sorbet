@@ -33,6 +33,27 @@ module Tapioca
           end
         end
 
+        # Builds typed kwarg params from a Props T::Struct class. Returns an
+        # empty array when `props_class` is nil. Exposed as a class method so
+        # other compilers (e.g. PhlexKit) can reuse the same mapping.
+        sig { params(props_class: T.nilable(T.class_of(T::Struct))).returns(T::Array[RBI::TypedParam]) }
+        def self.params_for(props_class)
+          return [] unless props_class
+
+          props_class.props.map do |field_name, prop_info|
+            type = prop_info[:type_object].to_s
+            has_default = prop_info.key?(:default)
+
+            param = if has_default
+                      RBI::KwOptParam.new(field_name.to_s, "T.unsafe(nil)")
+                    else
+                      RBI::KwParam.new(field_name.to_s)
+                    end
+
+            RBI::TypedParam.new(param: param, type: type)
+          end
+        end
+
         private
 
         sig { returns(T.nilable(T.class_of(T::Struct))) }
@@ -80,20 +101,7 @@ module Tapioca
 
         sig { returns(T::Array[RBI::TypedParam]) }
         def build_params_signature
-          return [] unless props_class
-
-          T.must(props_class).props.map do |field_name, prop_info|
-            type = prop_info[:type_object].to_s
-            has_default = prop_info.key?(:default)
-
-            param = if has_default
-                      RBI::KwOptParam.new(field_name.to_s, "T.unsafe(nil)")
-                    else
-                      RBI::KwParam.new(field_name.to_s)
-                    end
-
-            RBI::TypedParam.new(param: param, type: type)
-          end
+          self.class.params_for(props_class)
         end
       end
     end

@@ -258,6 +258,23 @@ class UserCard
 end
 ```
 
+### `Phlex::Kit` support
+
+When you collect components into a [Phlex::Kit](https://www.phlex.fun/components/kits) module, Phlex defines an instance and singleton method for every component constant under the kit (e.g. `Card { ... }` or `Button(label: "Save")`). Sorbet otherwise can't see these methods and reports them as undefined.
+
+This gem ships a second Tapioca DSL compiler — `Tapioca::Dsl::Compilers::PhlexKit` — that detects every module that `extend Phlex::Kit` and emits an RBI entry for each registered component. With `bundle exec tapioca dsl` re-run after adding/removing components, calls like:
+
+```ruby
+class Dashboard < Components::Base
+  def view_template
+    Card { "hello" }
+    Button(label: "Save")
+  end
+end
+```
+
+…type-check cleanly under Sorbet.
+
 ## License
 
 MIT.

@@ -28,6 +28,21 @@ class ComponentWithDefaults < Phlex::HTML
   end
 end
 
+# Component whose Props declares an optional field before a required one.
+# Used to verify the compiler reorders kwargs so required ones come first.
+class ComponentWithOptionalBeforeRequired < Phlex::HTML
+  include Phlex::Sorbet
+
+  class Props < T::Struct
+    const :bordered, T::Boolean, default: false
+    const :class_name, T.nilable(String)
+  end
+
+  def view_template
+    div { props.class_name.to_s }
+  end
+end
+
 # Component without any Props
 class ComponentWithoutProps < Phlex::HTML
   include Phlex::Sorbet

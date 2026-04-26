@@ -73,6 +73,16 @@ RSpec.describe Tapioca::Dsl::Compilers::PhlexSorbet do
         "def initialize(required_field:, optional_field: T.unsafe(nil)); end",
       )
     end
+
+    it "orders required kwargs before optional ones regardless of Props declaration order" do
+      reordered = rbi_for(ComponentWithOptionalBeforeRequired)
+      expect(reordered).to include(
+        "def initialize(class_name:, bordered: T.unsafe(nil)); end",
+      )
+      expect(reordered).to include(
+        "def self.new(class_name:, bordered: T.unsafe(nil)); end",
+      )
+    end
   end
 
   describe "#decorate without a Props class" do

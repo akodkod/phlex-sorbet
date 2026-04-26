@@ -57,6 +57,11 @@ RSpec.describe Tapioca::Dsl::Compilers::PhlexKit do
       expect(rbi).to include("def self.Alert(message:, variant: T.unsafe(nil), &block); end")
     end
 
+    it "orders required kwargs before optional ones regardless of Props declaration order" do
+      expect(rbi).to include("def Card2(class_name:, bordered: T.unsafe(nil), &block); end")
+      expect(rbi).to include("def self.Card2(class_name:, bordered: T.unsafe(nil), &block); end")
+    end
+
     it "wraps the methods on the kit module" do
       expect(rbi).to include("module KitFixtures")
     end

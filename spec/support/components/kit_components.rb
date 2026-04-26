@@ -37,6 +37,21 @@ module KitFixtures
       div { message }
     end
   end
+
+  # Optional kwarg declared before a required one — exercises kwarg
+  # reordering in the generated kit methods.
+  class Card2 < Phlex::HTML
+    include Phlex::Sorbet
+
+    class Props < T::Struct
+      const :bordered, T::Boolean, default: false
+      const :class_name, T.nilable(String)
+    end
+
+    def view_template
+      div { props.class_name.to_s }
+    end
+  end
 end
 
 # Nested kit module — `Phlex::Kit#const_added` automatically extends nested

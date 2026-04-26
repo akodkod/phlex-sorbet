@@ -40,7 +40,7 @@ module Tapioca
         def self.params_for(props_class)
           return [] unless props_class
 
-          props_class.props.map do |field_name, prop_info|
+          typed_params = props_class.props.map do |field_name, prop_info|
             type = prop_info[:type_object].to_s
             has_default = prop_info.key?(:default)
 
@@ -52,6 +52,12 @@ module Tapioca
 
             RBI::TypedParam.new(param: param, type: type)
           end
+
+          # Ruby allows required kwargs to follow optional ones, but Sorbet/RBI
+          # tooling rejects that ordering. Stable-partition so required kwargs
+          # come first while preserving each group's declaration order.
+          required, optional = typed_params.partition { |tp| tp.param.is_a?(RBI::KwParam) }
+          required + optional
         end
 
         private

@@ -16,7 +16,7 @@ class ComponentWithNestedStruct < Phlex::HTML
   end
 
   def view_template
-    span { "#{name} lives at #{address.street}, #{address.city}" }
+    span { "#{props.name} lives at #{props.address.street}, #{props.address.city}" }
   end
 end
 
@@ -31,7 +31,7 @@ class ComponentWithComplexTypes < Phlex::HTML
   end
 
   def view_template
-    span { "#{user_id}/#{tags.join(',')}/#{metadata.inspect}" }
+    span { "#{props.user_id}/#{props.tags.join(',')}/#{props.metadata.inspect}" }
   end
 end
 

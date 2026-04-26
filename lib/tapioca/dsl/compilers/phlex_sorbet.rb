@@ -9,7 +9,7 @@ module Tapioca
       # Generates RBI files for Phlex::Sorbet components.
       #
       # This compiler generates:
-      # - Instance methods for direct prop access (user_id, notify, etc.)
+      # - A typed `props` accessor returning the component's `Props` struct
       # - A typed `initialize` signature derived from the component's `Props` struct
       class PhlexSorbet < Compiler
         extend T::Sig
@@ -20,7 +20,7 @@ module Tapioca
         sig { override.void }
         def decorate
           root.create_path(constant) do |klass|
-            generate_prop_accessors(klass) if props_class
+            generate_props_method(klass) if props_class
             generate_new_method(klass)
             generate_initialize_method(klass)
           end
@@ -64,17 +64,14 @@ module Tapioca
         end
 
         sig { params(klass: RBI::Scope).void }
-        def generate_prop_accessors(klass)
-          return unless props_class
+        def generate_props_method(klass)
+          props = props_class
+          return unless props
 
-          T.must(props_class).props.each do |field_name, prop_info|
-            type = prop_info[:type_object].to_s
-
-            klass.create_method(
-              field_name.to_s,
-              return_type: type,
-            )
-          end
+          klass.create_method(
+            "props",
+            return_type: T.must(props.name),
+          )
         end
 
         # Phlex::SGML defines an untyped `def self.new(*a, **k, &block)` that

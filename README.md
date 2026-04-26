@@ -15,8 +15,8 @@ class UserCard < Phlex::HTML
 
   def view_template
     div do
-      span { "User ##{user_id}" }
-      span { "email visible" } if show_email
+      span { "User ##{props.user_id}" }
+      span { "email visible" } if props.show_email
     end
   end
 end
@@ -30,14 +30,13 @@ UserCard.new                                        # => raises Phlex::Sorbet::I
 
 ## Features
 
-- **Direct prop access** — use `user_id` inside `view_template` instead of `props.user_id`.
+- **Typed `props` accessor** — read fields via `props.user_id` with full Sorbet type checking.
 - **Type safety** — props are validated against your `Props` `T::Struct` at instantiation time.
 - **Coercion** — strings from controller params are coerced to the declared type via [sorbet-schema](https://github.com/maxveldink/sorbet-schema).
 - **Nested `T::Struct` props** — fully supported via sorbet-schema.
 - **Optional Props** — components can omit the `Props` class when they take no props.
-- **Backward-friendly accessor** — `props.user_id` still works.
 - **RSpec matchers** — `have_prop`, `have_props`, `accept_props`, `reject_props`.
-- **Tapioca DSL compiler** — generates RBI for `initialize` and prop accessors.
+- **Tapioca DSL compiler** — generates RBI for `initialize` and the `props` accessor.
 
 ## Installation
 
@@ -53,6 +52,9 @@ gem install phlex-sorbet
 
 ## Usage
 
+Inside a component, props are always read through the `props` accessor, which
+returns the component's typed `Props` struct.
+
 ### Basic component with props
 
 ```ruby
@@ -65,7 +67,7 @@ class Button < Phlex::HTML
   end
 
   def view_template
-    button(class: "btn btn-#{variant}") { label }
+    button(class: "btn btn-#{props.variant}") { props.label }
   end
 end
 
@@ -102,7 +104,7 @@ class TagList < Phlex::HTML
 
   def view_template
     ul do
-      tags.each { |t| li { t } }
+      props.tags.each { |t| li { t } }
     end
   end
 end
@@ -127,30 +129,12 @@ class Greeting < Phlex::HTML
   end
 
   def view_template
-    p { "Hi #{user.name}" }
-    p { user.email } if show_email
+    p { "Hi #{props.user.name}" }
+    p { props.user.email } if props.show_email
   end
 end
 
 Greeting.new(user: Greeting::User.new(name: "Ada", email: "ada@example.com")).call
-```
-
-### Using the `props` accessor
-
-If you'd rather access props through the struct, the `props` reader is always available:
-
-```ruby
-class Card < Phlex::HTML
-  include Phlex::Sorbet
-
-  class Props < T::Struct
-    const :title, String
-  end
-
-  def view_template
-    h2 { props.title }
-  end
-end
 ```
 
 ### Coercion (string → typed value)
@@ -158,8 +142,8 @@ end
 Because [sorbet-schema](https://github.com/maxveldink/sorbet-schema) handles deserialization, props passed as strings (e.g. from controller params) are coerced to the declared type:
 
 ```ruby
-UserCard.new(user_id: "42")            # user_id == 42
-ToggleSwitch.new(enabled: "true")      # enabled == true
+UserCard.new(user_id: "42")            # props.user_id == 42
+ToggleSwitch.new(enabled: "true")      # props.enabled == true
 ```
 
 If coercion fails, `Phlex::Sorbet::InvalidPropsError` is raised.
@@ -224,7 +208,7 @@ end
 
 ## Tapioca DSL compiler
 
-This gem ships a Tapioca DSL compiler that generates RBI files describing each component's `initialize` signature and per-prop accessors.
+This gem ships a Tapioca DSL compiler that generates RBI files describing each component's `initialize` signature and a typed `props` accessor.
 
 ```bash
 bundle exec tapioca dsl
@@ -247,16 +231,15 @@ It generates RBI like:
 
 ```ruby
 class UserCard
-  sig { returns(Integer) }
-  def user_id; end
-
-  sig { returns(T::Boolean) }
-  def show_email; end
+  sig { returns(UserCard::Props) }
+  def props; end
 
   sig { params(user_id: Integer, show_email: T::Boolean).void }
   def initialize(user_id:, show_email: T.unsafe(nil)); end
 end
 ```
+
+This means `props.user_id` and `props.show_email` type-check under Sorbet, and `UserCard.new(...)` is checked against the typed signature.
 
 ### `Phlex::Kit` support
 

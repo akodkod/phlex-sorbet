@@ -1,13 +1,18 @@
 # frozen_string_literal: true
 
 RSpec.describe "Phlex::Sorbet prop access" do
-  describe "direct prop access" do
-    it "exposes each prop as a method on the instance" do
+  describe "props accessor" do
+    it "returns the typed Props instance" do
       component = SimpleComponent.new(value: 7)
-      expect(component.value).to eq(7)
+      expect(component.props).to be_a(SimpleComponent::Props)
+      expect(component.props.value).to eq(7)
     end
 
-    it "renders using direct prop access" do
+    it "returns nil for components without Props" do
+      expect(ComponentWithoutProps.new.props).to be_nil
+    end
+
+    it "renders using the props accessor" do
       expect(SimpleComponent.new(value: 42).call).to include("42")
     end
 
@@ -19,24 +24,15 @@ RSpec.describe "Phlex::Sorbet prop access" do
 
     it "honors default values" do
       component = ComponentWithDefaults.new(required_field: "hi")
-      expect(component.optional_field).to be(false)
-      expect(component.required_field).to eq("hi")
+      expect(component.props.optional_field).to be(false)
+      expect(component.props.required_field).to eq("hi")
     end
   end
 
-  describe "props accessor (still available)" do
-    it "returns the typed Props instance" do
-      component = ComponentUsingPropsAccessor.new(value: 5)
-      expect(component.props).to be_a(ComponentUsingPropsAccessor::Props)
-      expect(component.props.value).to eq(5)
-    end
-
-    it "returns nil for components without Props" do
-      expect(ComponentWithoutProps.new.props).to be_nil
-    end
-
-    it "renders using the props accessor" do
-      expect(ComponentUsingPropsAccessor.new(value: 5).call).to include("15")
+  describe "no per-prop accessor methods" do
+    it "does not define a singleton method per prop on the instance" do
+      component = SimpleComponent.new(value: 7)
+      expect(component).not_to respond_to(:value)
     end
   end
 
@@ -47,8 +43,8 @@ RSpec.describe "Phlex::Sorbet prop access" do
         tags: ["a", "b"],
         metadata: { "k" => "v" },
       )
-      expect(component.tags).to eq(["a", "b"])
-      expect(component.metadata).to eq({ "k" => "v" })
+      expect(component.props.tags).to eq(["a", "b"])
+      expect(component.props.metadata).to eq({ "k" => "v" })
     end
   end
 end

@@ -10,7 +10,7 @@ class SimpleComponent < Phlex::HTML
   end
 
   def view_template
-    span { value.to_s }
+    span { props.value.to_s }
   end
 end
 
@@ -24,7 +24,7 @@ class ComponentWithDefaults < Phlex::HTML
   end
 
   def view_template
-    span { "#{required_field}: #{optional_field}" }
+    span { "#{props.required_field}: #{props.optional_field}" }
   end
 end
 

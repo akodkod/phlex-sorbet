@@ -1,4 +1,6 @@
 bindir
+ivar
+ivars
 Kodkod
 kwargs
 nilable

@@ -11,7 +11,7 @@ RSpec.describe "Phlex::Sorbet prop coercion" do
       string_field: "x",
       symbol_field: "x",
     )
-    expect(component.bool_field).to be(true)
+    expect(component.props.bool_field).to be(true)
   end
 
   it "coerces 'false' string to false" do
@@ -22,7 +22,7 @@ RSpec.describe "Phlex::Sorbet prop coercion" do
       string_field: "x",
       symbol_field: "x",
     )
-    expect(component.bool_field).to be(false)
+    expect(component.props.bool_field).to be(false)
   end
 
   it "coerces numeric strings to Integer" do
@@ -33,7 +33,7 @@ RSpec.describe "Phlex::Sorbet prop coercion" do
       string_field: "x",
       symbol_field: "x",
     )
-    expect(component.int_field).to eq(42)
+    expect(component.props.int_field).to eq(42)
   end
 
   it "coerces numeric strings to Float" do
@@ -44,7 +44,7 @@ RSpec.describe "Phlex::Sorbet prop coercion" do
       string_field: "x",
       symbol_field: "x",
     )
-    expect(component.float_field).to eq(3.14)
+    expect(component.props.float_field).to eq(3.14)
   end
 
   it "coerces strings to Symbol" do
@@ -55,7 +55,7 @@ RSpec.describe "Phlex::Sorbet prop coercion" do
       string_field: "x",
       symbol_field: "my_sym",
     )
-    expect(component.symbol_field).to eq(:my_sym)
+    expect(component.props.symbol_field).to eq(:my_sym)
   end
 
   it "raises InvalidPropsError when a string cannot be coerced to Integer" do
@@ -78,6 +78,6 @@ RSpec.describe "Phlex::Sorbet prop coercion" do
       "string_field" => "x",
       "symbol_field" => "x",
     )
-    expect(component.int_field).to eq(1)
+    expect(component.props.int_field).to eq(1)
   end
 end
